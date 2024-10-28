@@ -1,17 +1,20 @@
-import { generateResponseMessage } from '../helpers';
-import { storage } from '../storage';
-import { TCustomWebSocket } from '../types';
+import { db } from '../db';
+import { WebSocketClient } from '../types/interfaces';
+import { updateRooms } from './updateRoom';
 
-export const createRoom = (ws: TCustomWebSocket) => {
-  const room = storage.addRoom(ws);
+export const createRoom = (ws: WebSocketClient) => {
+  const { findRoomsByPlayer, addRoom, findPlayerBySocketName } = db;
+  const player = findPlayerBySocketName(ws.name);
 
-  if (room) {
-    const message = generateResponseMessage({
-      type: 'update_room',
-      data: storage.getAvailableRooms(),
-      index: 0,
-    });
-
-    ws.send(message);
+  if (player) {
+    const existingRooms = findRoomsByPlayer(player.name);
+    if (existingRooms.length === 0) {
+      addRoom(ws);
+      updateRooms();
+    } else {
+      console.log(`Player ${ws.name} already has a room`);
+    }
+  } else {
+    console.log(`Player ${ws.name} not found`);
   }
 };

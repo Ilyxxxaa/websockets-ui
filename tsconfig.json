@@ -1,21 +1,23 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
-    "esModuleInterop": true,
-    "target": "es2020",
-    "moduleResolution": "Node",
-    "outDir": "dist",
-    "forceConsistentCasingInFileNames": true,
-    "noFallthroughCasesInSwitch": true,
-    "isolatedModules": false,
+    "target": "ES2020",
+    "lib": ["ES2020"],
+    "allowJs": true,
     "strict": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
     "noImplicitAny": true,
-    "useUnknownInCatchVariables": false,
-    "inlineSourceMap": true,
-    "resolveJsonModule": true
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "sourceMap": true,
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true
   },
-  "ts-node": {
-    "esm": true
-  },
-  "lib": ["esnext"]
+  "include": ["./src/**/*"],
+  "exclude": ["node_modules"]
 }
