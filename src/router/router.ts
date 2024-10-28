@@ -1,33 +1,47 @@
-import type { RawData, WebSocket } from 'ws';
-import { parseAndValidateWsMessage } from '../helpers';
-import { addUser } from '../controllers';
-import { storage } from '../storage';
-import { TCustomWebSocket } from '../types';
+import { addPlayerToRoom } from '../controllers/addPlayerToRoom';
+import { addShips } from '../controllers/addShips';
+import { attack } from '../controllers/attack';
 import { createRoom } from '../controllers/createRoom';
+import { randomAttack } from '../controllers/randomAttack';
+import { regPlayer } from '../controllers/registration';
+import { singlePlay } from '../controllers/singlePlay';
+import { MESSAGE_TYPES } from '../types/enums';
+import { WebSocketClient } from '../types/interfaces';
 
-type TParams = {
-  message: RawData;
-  ws: WebSocket;
-};
+export const router = (message: string, ws: WebSocketClient) => {
+  try {
+    const { type, data } = JSON.parse(message);
 
-export const router = ({ message, ws }: TParams) => {
-  const wsMessage = parseAndValidateWsMessage(message);
-
-  if (wsMessage) {
-    const { type, id, data } = wsMessage;
-
-    console.log('ws message exists');
-
-    console.log({ type, data, id });
-
-    if (type === 'reg') {
-      const messageData = JSON.parse(data);
-      addUser(ws as TCustomWebSocket, messageData);
-      console.log('users', storage.users);
+    switch (type) {
+      case MESSAGE_TYPES.REGISTRATION:
+        const parsedData = JSON.parse(data);
+        const { name, password } = parsedData;
+        regPlayer(name, password, ws);
+        break;
+      case MESSAGE_TYPES.CREATE_ROOM:
+        createRoom(ws);
+        break;
+      case MESSAGE_TYPES.ADD_USER_TO_ROOM:
+        const indexRoom = JSON.parse(data).indexRoom;
+        addPlayerToRoom(indexRoom, ws);
+        break;
+      case MESSAGE_TYPES.ADD_SHIPS:
+        const { ships, gameId } = JSON.parse(data);
+        addShips(gameId, ships, ws);
+        break;
+      case MESSAGE_TYPES.ATTACK:
+        attack(data, ws);
+        break;
+      case MESSAGE_TYPES.RANDOM_ATTACK:
+        randomAttack(data, ws);
+        break;
+      case MESSAGE_TYPES.SINGLE_PLAY:
+        singlePlay(ws);
+        break;
+      default:
+        console.log('Unknown message type');
     }
-
-    if (type === 'create_room') {
-      createRoom(ws as TCustomWebSocket);
-    }
+  } catch (error) {
+    console.log(error);
   }
 };
